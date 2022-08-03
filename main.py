@@ -17,13 +17,10 @@ FILE = r'.+pdf-a4\.zip$'
 
 def whats_new(session):
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
-    # response = session.get(whats_new_url)
     response = get_response(session, whats_new_url)
     if response is None:
         return
     soup = BeautifulSoup(response.text, 'lxml')
-    # main_div = soup.find('section', attrs={'id': 'what-s-new-in-python'})
-    # div_ul = main_div.find('div', attrs={'class': 'toctree-wrapper'})
     main_div = find_tag(soup, 'section', attrs={'id': 'what-s-new-in-python'})
     div_ul = find_tag(main_div, 'div', attrs={'class': 'toctree-wrapper'})
     sections_by_python = div_ul.find_all('li', attrs={'class': 'toctree-l1'})
@@ -32,14 +29,10 @@ def whats_new(session):
         a_tag = section.find('a')
         href = a_tag['href']
         link = urljoin(whats_new_url, href)
-        # response = session.get(link)
         response = get_response(session, link)
         if response is None:
             continue
-        # response.encoding = 'utf-8'
         soup = BeautifulSoup(response.text, 'lxml')
-        # h1 = soup.find('h1')
-        # dl = soup.find('dl')
         h1 = find_tag(soup, 'h1')
         dl = find_tag(soup, 'dl')
         dl_text = dl.text.replace('\n', ' ')
@@ -48,13 +41,10 @@ def whats_new(session):
 
 
 def latest_versions(session):
-    # response = session.get(MAIN_DOC_URL)
-    # response.encoding = 'utf-8'
     response = get_response(session, MAIN_DOC_URL)
     if response is None:
         return
     soup = BeautifulSoup(response.text, 'lxml')
-    # sidebar = soup.find('div', attrs={'class': 'sphinxsidebarwrapper'})
     sidebar = find_tag(soup, 'div', attrs={'class': 'sphinxsidebarwrapper'})
     ul_tags = sidebar.find_all('ul')
     for ul in ul_tags:
@@ -77,13 +67,10 @@ def latest_versions(session):
 
 def download(session):
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
-    # response = session.get(downloads_url)
     response = get_response(session, downloads_url)
     if response is None:
         return
     soup = BeautifulSoup(response.text, 'lxml')
-    # link_table = soup.find('table')
-    # pdf_a4_tag = link_table.find('a', {'href': re.compile(FILE)})
     link_table = find_tag(soup, 'table')
     pdf_a4_tag = find_tag(link_table, 'a', attrs={'href': re.compile(FILE)})
     archive_url = urljoin(downloads_url, pdf_a4_tag['href'])
