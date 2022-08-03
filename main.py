@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from constants import BASE_DIR, MAIN_DOC_URL
 from configs import configure_argument_parser
+from outputs import control_output
 
 PATTERN = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
 FILE = r'.+pdf-a4\.zip$'
@@ -14,14 +15,12 @@ FILE = r'.+pdf-a4\.zip$'
 
 def whats_new(session):
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
-    # session = requests_cache.CachedSession()
-    # session.cache.clear()
     response = session.get(whats_new_url)
     soup = BeautifulSoup(response.text, 'lxml')
     main_div = soup.find('section', attrs={'id': 'what-s-new-in-python'})
     div_ul = main_div.find('div', attrs={'class': 'toctree-wrapper'})
     sections_by_python = div_ul.find_all('li', attrs={'class': 'toctree-l1'})
-    result = []
+    result = [('Ссылка на статью', 'Заголовок', 'Редактор, автор')]
     for section in tqdm(sections_by_python):
         a_tag = section.find('a')
         href = a_tag['href']
@@ -33,13 +32,10 @@ def whats_new(session):
         dl = soup.find('dl')
         dl_text = dl.text.replace('\n', ' ')
         result.append((link, h1.text, dl_text))
-    for row in result:
-        print(*row)
+    return result
 
 
 def latest_versions(session):
-    # session = requests_cache.CachedSession()
-    # session.cache.clear()
     response = session.get(MAIN_DOC_URL)
     response.encoding = 'utf-8'
     soup = BeautifulSoup(response.text, 'lxml')
@@ -51,7 +47,7 @@ def latest_versions(session):
             break
     else:
         raise Exception('Ничего не нашлось')
-    results = []
+    results = [('Ссылка на документацию', 'Версия', 'Статус')]
     for a_tag in tqdm(a_tags):
         link = a_tag['href']
         text_match = re.search(PATTERN, a_tag.text)
@@ -60,14 +56,11 @@ def latest_versions(session):
         else:
             version, status = a_tag.text, ''
         results.append((link, version, status))
-    for row in results:
-        print(*row)
+    return results
 
 
 def download(session):
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
-    # session = requests_cache.CachedSession()
-    # session.cache.clear()
     response = session.get(downloads_url)
     soup = BeautifulSoup(response.text, 'lxml')
     link_table = soup.find('table')
@@ -96,7 +89,9 @@ def main():
     if args.clear_cache:
         session.cache.clear()
     parser_mode = args.mode
-    MODE_TO_FUNCTION[parser_mode](session)
+    results = MODE_TO_FUNCTION[parser_mode](session)
+    if results is not None:
+        control_output(results, args)
 
 
 if __name__ == "__main__":
