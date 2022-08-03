@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 http_cache.sqlite
 .vscode/settings.json
+
+/results/
