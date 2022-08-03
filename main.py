@@ -1,3 +1,4 @@
+import logging
 import re
 from urllib.parse import urljoin
 
@@ -5,11 +6,10 @@ import requests_cache
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from constants import BASE_DIR, MAIN_DOC_URL
 from configs import configure_argument_parser, configure_logging
+from constants import BASE_DIR, MAIN_DOC_URL
 from outputs import control_output
-import logging
-from utils import get_response, find_tag
+from utils import find_tag, get_response
 
 PATTERN = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
 FILE = r'.+pdf-a4\.zip$'
